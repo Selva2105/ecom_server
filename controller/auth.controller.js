@@ -1,7 +1,7 @@
 const User = require("../model/user.modal");
 const SignToken = require("../utils/SignToken");
 const asyncErrorHandler = require('../utils/asyncErrorHandler')
-const jwt = require('jsonwebtoken');
+const path = require('path');
 const CustomError = require("../utils/customError");
 const emailTemplate = require("../view/email-template");
 const sendMail = require("../utils/mailer");
@@ -38,7 +38,7 @@ exports.createUser = asyncErrorHandler(async (req, res, next) => {
         from: process.env.ADMIN_MAILID,
         to: user.email,
         subject: 'Welcome to Sky kart! Verify your email',
-        html: emailTemplate(`http://localhost:5001/api/v1/auth/verifyEmail/${user.emailVerificationToken}`, user.firstName)
+        html: emailTemplate(`https://ecom-server-beta.vercel.app/api/v1/auth/verifyEmail/${user.emailVerificationToken}`, user.firstName)
     };
 
     // Store the sendMail function in a variable
@@ -94,10 +94,7 @@ exports.verifyEmail = asyncErrorHandler(async (req, res, next) => {
 
     await user.save();
 
-    res.status(200).json({
-        status: "success",
-        message: 'Email verified successfully',
-    });
+    res.sendFile(path.join(__dirname, '../view/email-result.html'));
 });
 
 
@@ -125,17 +122,25 @@ exports.getAllUsers = asyncErrorHandler(async (req, res, next) => {
 
     res.status(200).json({
         status: "success",
-        message: 'Signed in successfully',
+        length: users.length,
+        message: 'All users fetched successfully',
         users
     });
 });
 
 exports.getUserById = asyncErrorHandler(async (req, res, next) => {
-    const user = await User.findById(req.params.id).select('-password');
+    const user = await User.findById(req.params.id).select('-password -__v');
+
     if (!user) {
         throw new CustomError('User not found', 404);
     }
-    res.status(200).json(user);
+
+    res.status(200).json({
+        status: "success",
+        length: user.length,
+        message: `${user.userName} details fetched sucessfully`,
+        user
+    });
 });
 
 exports.updateUserById = asyncErrorHandler(async (req, res, next) => {
@@ -148,8 +153,12 @@ exports.updateUserById = asyncErrorHandler(async (req, res, next) => {
 
 exports.deleteUserById = asyncErrorHandler(async (req, res, next) => {
     const user = await User.findByIdAndDelete(req.params.id);
+    
     if (!user) {
         throw new CustomError('User not found', 404);
     }
-    res.status(204).send();
+    res.status(204).json({
+        status: "success",
+        message: `User deleted sucessfully`,
+    });
 });
