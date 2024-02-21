@@ -63,38 +63,29 @@ const productController = {
     // Update a product by ID
     // Update a product by ID
     updateProductById: asyncErrorHandler(async (req, res, next) => {
-        console.log(req.body);
+        const { id } = req.params;
+        const { seller, variants, ...rest } = req.body;
 
-        // Check if the request body tries to update the seller field
-        if (req.body.seller) {
-            const error = new CustomError("Updating the seller field is not allowed", 400);
-            return next(error);
-        }
-
-        // If variants are provided, ensure they are in the expected format and do not allow ratings updates
-        if (req.body.variants) {
-            if (!Array.isArray(req.body.variants) || req.body.variants.length === 0) {
-                const error = new CustomError("Variants provided must be in an array format", 400);
-                return next(error);
-            }
-
-            // Check each variant for ratings, assuming you want to disallow direct ratings updates
-            const ratingsUpdateAttempt = req.body.variants.some(variant => variant.ratings && variant.ratings.length > 0);
-            if (ratingsUpdateAttempt) {
-                const error = new CustomError("Editing ratings directly is not allowed", 400);
-                return next(error);
-            }
-        }
-
-        const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-
-        if (!updatedProduct) {
+        // Check if the product exists
+        const product = await Product.findById(id);
+        if (!product) {
             throw new CustomError('Product not found', 404);
         }
 
+        // Check if the user is trying to update restricted fields
+        const restrictedFields = ['seller', 'variants.ratings'];
+        for (const field of restrictedFields) {
+            if (rest[field] !== undefined) {
+                throw new CustomError(`You are not allowed to update the field: ${field}`, 400);
+            }
+        }
+
+        // Update the product
+        const updatedProduct = await Product.findByIdAndUpdate(id, { ...rest, $addToSet: { variants: { $each: variants } } }, { new: true });
+
         res.status(200).json({
-            status: 'success',
-            message: 'Product by id updated successfully',
+            status: "success",
+            message: `Product updated successfully`,
             product: updatedProduct
         });
     }),

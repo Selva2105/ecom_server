@@ -5,7 +5,7 @@ const router = express.Router();
 
 // Import the validator function
 
-const { createUser, signin, getAllUsers, verifyEmail, getUserById, deleteUserById } = require('../controller/auth.controller');
+const { createUser, signin, getAllUsers, verifyEmail, getUserById, deleteUserById, updateUserById } = require('../controller/auth.controller');
 const userValidators = require('../validators/userValidators');
 
 // Route to create a new user
@@ -26,7 +26,8 @@ router.get('/verifyEmail/:emailVerificationToken', verifyEmail);
 
 router.get('/usersList', getAllUsers);
 router.get('/user/:id', getUserById);
-
+router.patch('/user/:id', updateUserById);
 router.delete('/user/:id', deleteUserById)
+
 
 module.exports = router;

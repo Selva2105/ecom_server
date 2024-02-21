@@ -1,12 +1,5 @@
-const { Product } = require("../model/product.modal");
 const request = require('supertest');
-const connectDB = require("../utils/connectDB");
 const app = require("../server");
-
-// Establish connection to the database before running tests
-beforeAll(async () => {
-    await connectDB("mongodb+srv://selvaganapathikanakaraj2105:FhidJdraQBaUJm7K@ecomcluster.p2asger.mongodb.net/ecom?retryWrites=true&w=majority");
-});
 
 let productId;
 let variantId;

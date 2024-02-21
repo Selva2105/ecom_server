@@ -46,18 +46,7 @@ const addressSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     }
-}, { _id: false });
-
-const paymentMethodSchema = new mongoose.Schema({
-    provider: {
-        type: String,
-        required: true
-    },
-    paymentMethodId: {
-        type: String,
-        required: true
-    }
-}, { _id: false, timestamps: true });
+});
 
 const userSchema = new mongoose.Schema({
     firstName: {
@@ -91,7 +80,6 @@ const userSchema = new mongoose.Schema({
         type: String,
     },
     addresses: [addressSchema],
-    paymentMethods: [paymentMethodSchema],
     phone: {
         country_code: {
             type: String,
@@ -110,7 +98,7 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['user', 'admin', 'dev', 'owner'],
+        enum: ['user', 'admin', 'dev', 'seller'],
         default: 'user'
     },
     preferences: {

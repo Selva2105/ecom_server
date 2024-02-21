@@ -28,7 +28,7 @@ const variantSchema = new mongoose.Schema({
         default: true
     },
     ratings: [{
-        _id: false, 
+        _id: false,
         user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
@@ -42,7 +42,10 @@ const variantSchema = new mongoose.Schema({
             type: String,
             required: true
         }
-    }]
+    }],
+    features: {
+        type: String
+    }
 });
 
 const productSchema = new mongoose.Schema({
