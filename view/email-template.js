@@ -80,10 +80,11 @@ const emailTemplate = (url, name) => {
           
         .img-container{
             display: flex;
+            align-items: center;
         }
           
         .img-font{  
-            font-size: 18px;    
+            font-size: 22px;    
         }
 
       </style>
@@ -91,8 +92,7 @@ const emailTemplate = (url, name) => {
     <body>
         <div class="container poppins-regular">
             <div class="img-container">
-                <img src="http://localhost:5001/images/logo.png" alt="Company Logo" class="logo-img">
-                <p class="img-font poppins-medium">Sky kart</p>
+                <img src="https://ecom-server-beta.vercel.app/images/logo.png" alt="Company Logo" class="logo-img">
             </div>
             <p class="poppins-medium">Hi ${name} our beloved Chief,</p>
             <p>Welcome to Sky Kart, your one-stop destination for all your shopping needs! We are thrilled to have you on board and look forward to providing you with an exceptional online shopping experience.</p>
