@@ -12,7 +12,7 @@ const sendMail = async (mailOptions) => {
         service: 'gmail',
         host: "smtp.gmail.com",
         port: 587,
-        secure: false, // Use SSL
+        secure: false,
         auth: {
             user: process.env.ADMIN_MAILID, // Sender's email address
             pass: process.env.ADMIN_MAIL_PASSWORD, // Sender's email password or app-specific passkey
@@ -25,6 +25,7 @@ const sendMail = async (mailOptions) => {
     } catch (error) {
         // Log any errors that occur during the email sending process
         console.error("Error sending email:", error);
+        throw new Error('Error sending email');
     }
 }
 

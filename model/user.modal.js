@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const crypto = require('crypto')
 
 const addressSchema = new mongoose.Schema({
     type: {
@@ -177,6 +178,13 @@ userSchema.pre('save', async function (next) {
     if (this.isModified('password')) {
         this.password = await bcrypt.hash(this.password, 12);
     }
+    
+    // Create email verification token and set expiration time
+    if (this.isNew) {
+        this.emailVerificationToken = crypto.randomBytes(20).toString('hex');
+        this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
+    }
+    
     next();
 });
 

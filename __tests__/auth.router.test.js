@@ -49,4 +49,9 @@ describe("Auth Routes", () => {
     });
   });
 
+
+  afterAll(async () => {
+    await User.deleteOne({ email: "testuser@example.com" });
+  });
+
 });

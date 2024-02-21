@@ -2,6 +2,10 @@ const User = require("../model/user.modal");
 const SignToken = require("../utils/SignToken");
 const asyncErrorHandler = require('../utils/asyncErrorHandler')
 const jwt = require('jsonwebtoken');
+const CustomError = require("../utils/customError");
+const emailTemplate = require("../view/email-template");
+const sendMail = require("../utils/mailer");
+
 
 // Function to create a new user
 exports.createUser = asyncErrorHandler(async (req, res, next) => {
@@ -19,7 +23,7 @@ exports.createUser = asyncErrorHandler(async (req, res, next) => {
         lastName,
         userName,
         email,
-        password, // Password hashing is handled in the model
+        password,
         addresses,
         phone,
         profilePicture,
@@ -28,6 +32,25 @@ exports.createUser = asyncErrorHandler(async (req, res, next) => {
 
     // Save the user to the database
     await user.save();
+
+    // In auth.controller.js, when creating a new user, send an email using nodemailer
+    const mailOptions = {
+        from: process.env.ADMIN_MAILID,
+        to: user.email,
+        subject: 'Welcome to Sky kart! Verify your email',
+        html: emailTemplate(`http://localhost:5001/api/v1/auth/verifyEmail/${user.emailVerificationToken}`, user.firstName)
+    };
+
+    // Store the sendMail function in a variable
+    const sendMailFunction = sendMail;
+
+    try {
+        await sendMailFunction(mailOptions);
+    } catch (error) {
+        // Delete the user if email sending fails
+        await User.findByIdAndDelete(user._id);
+        throw new CustomError('Error sending email. User creation failed.', 500);
+    }
 
     // Prepare the response object without sensitive data
     const userResponse = {
@@ -45,11 +68,35 @@ exports.createUser = asyncErrorHandler(async (req, res, next) => {
     // Generate token using SignToken utility
     const token = SignToken(user._id.toString());
 
-    // Include the token in the response if needed
     res.status(201).json({
+        status: "success",
         message: 'User created successfully',
         user: userResponse,
-        token, 
+        token,
+    });
+});
+
+exports.verifyEmail = asyncErrorHandler(async (req, res, next) => {
+    const { emailVerificationToken } = req.params;
+    const user = await User.findOne({ emailVerificationToken });
+
+    if (!emailVerificationToken) {
+        throw new CustomError('Token not found', 404)
+    }
+
+    if (!user || user.emailVerificationExpires < Date.now()) {
+        throw new CustomError('Invalid or expired verification token', 400);
+    }
+
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    user.isEmailVerified = true;
+
+    await user.save();
+
+    res.status(200).json({
+        status: "success",
+        message: 'Email verified successfully',
     });
 });
 
@@ -66,14 +113,21 @@ exports.signin = asyncErrorHandler(async (req, res, next) => {
     const token = SignToken(user._id.toString());
 
     res.status(200).json({
+        status: "success",
         message: 'Signed in successfully',
         token,
     });
 });
 
 exports.getAllUsers = asyncErrorHandler(async (req, res, next) => {
-    const users = await User.find().select('-password');
-    res.status(200).json(users);
+
+    const users = await User.find().select('-password -__v');
+
+    res.status(200).json({
+        status: "success",
+        message: 'Signed in successfully',
+        users
+    });
 });
 
 exports.getUserById = asyncErrorHandler(async (req, res, next) => {

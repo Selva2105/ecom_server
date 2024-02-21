@@ -5,11 +5,11 @@ const router = express.Router();
 
 // Import the validator function
 
-const { createUser } = require('../controller/auth.controller');
+const { createUser, signin, getAllUsers, verifyEmail } = require('../controller/auth.controller');
 const userValidators = require('../validators/userValidators');
 
 // Route to create a new user
-router.post('/user', userValidators.validateUserFields, userValidators.validateAddressFields, (req, res,next) => {
+router.post('/user', userValidators.validateUserFields, userValidators.validateAddressFields, (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         const validationErrors = errors.array().map(err => `${err.msg} (${err.path}: ${err.value})`).join(', ');
@@ -20,5 +20,9 @@ router.post('/user', userValidators.validateUserFields, userValidators.validateA
     // Call the controller function to create the user
     createUser(req, res, next);
 });
+
+router.post('/login', signin)
+router.get('/verifyEmail/:emailVerificationToken', verifyEmail);
+router.get('/usersList', getAllUsers)
 
 module.exports = router;
