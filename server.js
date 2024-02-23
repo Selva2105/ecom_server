@@ -40,8 +40,9 @@ app.get('/', (req, res) => {
     res.send('Welcome to the root of the server!');
 });
 
-app.use('/api/v1/auth',require('./router/auth.router'))
-app.use('/api/v1/product',require('./router/product.router'))
+app.use('/api/v1/auth',require('./router/auth.router'));
+app.use('/api/v1/product',require('./router/product.router'));
+app.use('/api/v1/orders',require('./router/order.router'))
 
 // 404 route - Handles requests to undefined routes
 app.all("*", (req, res, next) => {

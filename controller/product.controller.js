@@ -61,7 +61,6 @@ const productController = {
     }),
 
     // Update a product by ID
-    // Update a product by ID
     updateProductById: asyncErrorHandler(async (req, res, next) => {
         const { id } = req.params;
         const { seller, variants, ...rest } = req.body;
@@ -80,8 +79,22 @@ const productController = {
             }
         }
 
+        // Update or add variants provided in the request
+        if (variants && variants.length) {
+            variants.forEach(newVariant => {
+                const existingVariant = product.variants.id(newVariant._id);
+                if (existingVariant) {
+                    // Update existing variant if _id matches
+                    existingVariant.set(newVariant);
+                } else {
+                    // Add new variant if it doesn't exist
+                    product.variants.push(newVariant);
+                }
+            });
+        }
+
         // Update the product
-        const updatedProduct = await Product.findByIdAndUpdate(id, { ...rest, $addToSet: { variants: { $each: variants } } }, { new: true });
+        const updatedProduct = await product.save();
 
         res.status(200).json({
             status: "success",
@@ -90,7 +103,6 @@ const productController = {
         });
     }),
 
-    // Add a rating to a product by ID
     // Add a rating to a product variant by ID
     addRatingToProductById: asyncErrorHandler(async (req, res, next) => {
         const { variantId, ratings } = req.body;
